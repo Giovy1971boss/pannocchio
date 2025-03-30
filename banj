@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bankautomat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .hidden { display: none; }
+        .container { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #000; }
+    </style>
+</head>
+<body>
+    <div class="container" id="pinScreen">
+        <h2>Bitte PIN eingeben</h2>
+        <input type="password" id="pinInput" maxlength="4">
+        <button onclick="checkPin()">Bestätigen</button>
+        <p id="pinMessage"></p>
+    </div>
+    
+    <div class="container hidden" id="menuScreen">
+        <h2>Kontostand: <span id="balance">1500</span> €</h2>
+        <button onclick="showTransaction('withdraw')">Geld abheben</button>
+        <button onclick="showTransaction('deposit')">Geld einzahlen</button>
+        <button onclick="showTransaction('transfer')">Überweisung tätigen</button>
+    </div>
+    
+    <div class="container hidden" id="transactionScreen">
+        <h2 id="transactionTitle"></h2>
+        <input type="number" id="amountInput" step="0.01" min="0.01" max="1500">
+        <button onclick="processTransaction()">Bestätigen</button>
+        <p id="transactionMessage"></p>
+    </div>
+
+    <div class="container hidden" id="endScreen">
+        <h2>Bitte Karte entnehmen</h2>
+    </div>
+    
+    <script>
+        let balance = 1500;
+        const pin = "0505";
+        let transactionType = "";
+
+        function checkPin() {
+            let enteredPin = document.getElementById("pinInput").value;
+            if (enteredPin === pin) {
+                document.getElementById("pinScreen").classList.add("hidden");
+                document.getElementById("menuScreen").classList.remove("hidden");
+            } else {
+                document.getElementById("pinMessage").innerText = "Eingabe ist falsch!";
+            }
+        }
+        
+        function showTransaction(type) {
+            transactionType = type;
+            document.getElementById("menuScreen").classList.add("hidden");
+            document.getElementById("transactionScreen").classList.remove("hidden");
+            document.getElementById("transactionTitle").innerText = 
+                type === 'withdraw' ? 'Geld abheben' : 
+                type === 'deposit' ? 'Geld einzahlen' : 'Überweisung tätigen';
+        }
+        
+        function processTransaction() {
+            let amount = parseFloat(document.getElementById("amountInput").value);
+            let message = "";
+
+            if (isNaN(amount) || amount < 0.01 || amount > 1500) {
+                message = "Ungültiger Betrag!";
+            } else if (transactionType === "withdraw" || transactionType === "transfer") {
+                if (amount > balance) {
+                    message = "Kontostand zu niedrig!";
+                } else {
+                    balance -= amount;
+                    message = "Transaktion erfolgreich!";
+                }
+            } else if (transactionType === "deposit") {
+                balance += amount;
+                message = "Geld erfolgreich eingezahlt!";
+            }
+            document.getElementById("balance").innerText = balance;
+            document.getElementById("transactionMessage").innerText = message;
+            setTimeout(endSession, 8000);
+        }
+        
+        function endSession() {
+            document.getElementById("transactionScreen").classList.add("hidden");
+            document.getElementById("endScreen").classList.remove("hidden");
+            setTimeout(() => location.reload(), 5000);
+        }
+    </script>
+</body>
+</html>
